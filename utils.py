@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 from tqdm import tqdm
 import pandas as pd
+import numpy as np
 
 def get_reward_model(reward_name = "OpenAssistant/reward-model-deberta-v3-large-v2",
                      model_max_length=1700,
@@ -30,3 +31,5 @@ def get_scores_df(df, tokenizer, rank_model):
         reject_scores.append(existing[(row.prompt, row.rejected)])
     return pd.DataFrame({'chosen' : chosen_scores, 'rejected' : reject_scores})
 
+def get_percent_chosen(df, chosen_col = 0):
+    return np.mean(df.values.argmax(axis=1) == chosen_col)
