@@ -17,17 +17,18 @@ def get_score(prompt, response, tokenizer, rank_model,
     inputs = inputs.to(device)
     return rank_model(**inputs).logits[0].cpu().detach().item()
 
-def get_scores_df(df, tokenizer, rank_model):
+def get_scores_df(df, tokenizer, rank_model,
+                  device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
     chosen_scores = []
     reject_scores = []
     existing = {}
     for i, row in tqdm(df.iterrows(), total=len(df)):
         if (row.prompt, row.chosen) not in existing:
-            existing[(row.prompt, row.chosen)] = get_score(row.prompt, row.chosen, tokenizer=tokenizer, rank_model=rank_model)
+            existing[(row.prompt, row.chosen)] = get_score(row.prompt, row.chosen, tokenizer=tokenizer, rank_model=rank_model, device=device)
         chosen_scores.append(existing[(row.prompt, row.chosen)])
 
         if (row.prompt, row.rejected) not in existing:
-            existing[(row.prompt, row.rejected)] = get_score(row.prompt, row.rejected, tokenizer=tokenizer, rank_model=rank_model)
+            existing[(row.prompt, row.rejected)] = get_score(row.prompt, row.rejected, tokenizer=tokenizer, rank_model=rank_model, device=device)
         reject_scores.append(existing[(row.prompt, row.rejected)])
     return pd.DataFrame({'chosen' : chosen_scores, 'rejected' : reject_scores})
 
