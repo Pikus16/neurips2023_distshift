@@ -41,8 +41,8 @@ def break_up_sentences(sentences):
     assert len(sentence_to_prompt) == len(sentence_list)
     return sentence_list, np.array(sentence_to_prompt)
     
-def get_translation_model(model_name, device=0):
-    return pipeline("translation", model=model_name, device=device)
+def get_translation_model(model_name, device=0, truncation=True):
+    return pipeline("translation", model=model_name, device=device, truncation=truncation)
 
 def do_translation(pipe_translate, dataset, batch_size=64):
     all_results = []
@@ -53,7 +53,7 @@ def do_translation(pipe_translate, dataset, batch_size=64):
 def stich_back_sentences(dataset, sentence_to_prompt, translated):
     sentences = np.array(dataset.to_list(translated))
     s = []
-    for i in np.arange(max(sentence_to_prompt)):
+    for i in np.arange(max(sentence_to_prompt) + 1):
         inds = np.where(sentence_to_prompt == i)[0]
         s.append(' '.join(sentences[inds]))
     return s
@@ -63,7 +63,7 @@ def main(path_to_dataframe,
          out_filepath,
          batch_size = 64,
          device=0):
-    df = pd.read_csv(path_to_dataframe)
+    df = pd.read_csv(path_to_dataframe).fillna('')
     pipe_translate = get_translation_model(model_to_translate, device=device)
     all_result_types = {}
     for text_type in ['prompt', 'chosen', 'rejected']:
