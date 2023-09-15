@@ -1,3 +1,9 @@
+"""
+This script translates a dataframe with 3 columns: prompt, chosen, rejected
+
+Example call: python translate_text.py --path_to_dataframe data/shp/english_to_german.csv --model_to_translate "Helsinki-NLP/opus-mt-de-en" --out_filepath data/shp/english_to_german_to_english.csv --device 4
+"""
+
 from datasets import load_dataset
 from transformers import pipeline
 import torch
