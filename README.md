@@ -9,9 +9,4 @@ We took the data from [OpenAI's Summarize From Feedback](https://huggingface.co/
    
 
 ## Reward Scores
-On the [OpenAI's Summarize From Feedback](https://huggingface.co/datasets/openai/summarize_from_feedback) dataset, with translated prompts / responses as listed above, we used the [OpenAssistant's Deberta Reward model](https://huggingface.co/OpenAssistant/reward-model-deberta-v3-large-v2) to get scores for each prompt/response pair.
-* [Original scores in English](https://drive.google.com/file/d/1WyFdTS9gTKoIQ8UyKqcEaXS824ZUKyCu/view?usp=drive_link)
-* [English translated to Chinese scores](https://drive.google.com/file/d/19iO6UNgVrCg_gEo-3YDH5dxPANqQQAsO/view?usp=drive_link)
-* [English translated to Chinese back to Englis Scores](https://drive.google.com/file/d/1Jybkwlh7HVg7MRJan8LFnhm2E-INBvGS/view?usp=drive_link)
-* [Original English Prompts with Chinese Responses](https://drive.google.com/file/d/1DV2KOQ_SZMeyAkFGpP3PuNI_Lb04YG3u/view?usp=drive_link)
-* [Chinese Prompts with Original English Responses](https://drive.google.com/file/d/1LrT9ToX7s7J6rTuhN8Ih9p5rcc_C9VhZ/view?usp=drive_link)
+On the [OpenAI's Summarize From Feedback](https://huggingface.co/datasets/openai/summarize_from_feedback) dataset, with translated prompts / responses as listed above, we used the [OpenAssistant's Deberta Reward model](https://huggingface.co/OpenAssistant/reward-model-deberta-v3-large-v2) to get scores for each prompt/response pair. These can all be found in [model_scores/deberta_v3_large](model_scores/deberta_v3_large). We have the [original scores](model_scores/deberta_v3_large/english_original_scores.csv). Additionally, for each language, we have 4 scores: both the prompt and response in the translated language, just the prompt translated, just the response translated, and then both the prompt and response translated back to english.
