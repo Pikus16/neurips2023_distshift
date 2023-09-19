@@ -1,12 +1,14 @@
 """
 Calculates ECE
 
-Example call: python calc_ece.py --scores_csv model_scores/deberta_v3_large/open_ai_summarize_from_feedback/english_original_scores.csv
+Example call: python calc_ece.py --scores_csv model_scores/deberta_v3_large/open_ai_summarize_from_feedback/english_original_scores.csv  --reliability_diagram_path reliable.png --reliability_diagram_title "SummarizeFromFeedback DeBERTa"
 """
 import numpy as np
 import fire
 import pandas as pd
 from scipy.special import softmax
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 def calc_bins(y_true, preds, confs, num_bins=10):
   # Assign each prediction to a bin
@@ -39,7 +41,47 @@ def get_metrics(y_true, preds, confs):
   overall_acc = np.mean(y_true == preds)
   return ECE, MCE, overall_acc
   
-def main(scores_csv):
+def draw_reliability_graph(y_true, preds, confs, save_path, title=None):
+  ECE, MCE, overall_acc = get_metrics(y_true, preds, confs)
+  bins, _, bin_accs, _, _ = calc_bins(y_true, preds, confs)
+
+  fig = plt.figure(figsize=(8, 8))
+  ax = fig.gca()
+
+  # x/y limits
+  ax.set_xlim(0, 1.05)
+  ax.set_ylim(0, 1)
+
+  # x/y labels
+  plt.xlabel('Confidence')
+  plt.ylabel('Accuracy')
+
+  # Create grid
+  ax.set_axisbelow(True) 
+  ax.grid(color='gray', linestyle='dashed')
+
+  # Error bars
+  plt.bar(bins, bins,  width=0.1, alpha=0.3, edgecolor='black', color='r', hatch='\\')
+
+  # Draw bars and identity line
+  plt.bar(bins, bin_accs, width=0.1, alpha=0.7, edgecolor='red', color='purple')
+  plt.bar(bins, np.minimum(bins,bin_accs), width=0.1, alpha=1, edgecolor='black', color='b')
+
+  plt.plot([0,1],[0,1], '--', color='gray', linewidth=2)
+
+  # Equally spaced axes
+  plt.gca().set_aspect('equal', adjustable='box')
+
+  # ECE and MCE legend
+  ECE_patch = mpatches.Patch(color='green', label='ECE = {:.2f}%'.format(ECE*100))
+  #MCE_patch = mpatches.Patch(color='red', label='MCE = {:.2f}%'.format(MCE*100))
+  #acc_patch = mpatches.Patch(color='orange', label='Overall Accuracy = {:.2f}%'.format(overall_acc*100))
+  plt.legend(handles=[ECE_patch])
+  if title is not None:
+    plt.title(title)
+  fig.savefig(save_path)
+  
+def main(scores_csv, reliability_diagram_path=None, reliability_diagram_title=None):
   scores = pd.read_csv(scores_csv)
   assert scores.shape[1] == 2
   assert scores.columns.to_list() == ['chosen', 'rejected']
@@ -49,6 +91,9 @@ def main(scores_csv):
   confs = scores[np.arange(len(scores)), preds]
   ece, mce, acc = get_metrics(y_true=y_true, preds=preds, confs=confs)
   print(f"ECE = {round(ece*100, 2)}%, accuracy = {round(acc*100, 2)}%")
+
+  if reliability_diagram_path is not None:
+    draw_reliability_graph(y_true, preds, confs, reliability_diagram_path, title=reliability_diagram_title)
   
 
 if __name__ == '__main__':
