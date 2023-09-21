@@ -12,6 +12,9 @@ import matplotlib.pyplot as plt
 from urllib.request import urlopen
 import logging
 
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 np.random.seed(0)
 random.seed(0)
 
@@ -56,6 +59,15 @@ def perturb_word_string(s, prob_perturb=0.1):
             s, i = do_action_word(s, i)
     return s
 
+def perturb_df(df, prob_perturb, original):
+    for i, row in original.iterrows():
+#         df.prompt.iloc[i] = perturb_string(row.prompt, prob_perturb=prob_perturb)
+        df.prompt.iloc[i] = perturb_word_string(row.prompt, prob_perturb=prob_perturb)
+#         df.iloc[i].chosen = perturb_string(row.chosen, prob_perturb=prob_perturb)
+        df.iloc[i].chosen = perturb_word_string(row.chosen, prob_perturb=prob_perturb)
+#         df.iloc[i].rejected = perturb_string(row.rejected, prob_perturb=prob_perturb)
+        df.iloc[i].rejected = perturb_word_string(row.rejected, prob_perturb=prob_perturb)
+    return df
 
 def main(args):
     make_dir(args.path)
@@ -66,7 +78,7 @@ def main(args):
     logging.info('Perturbing Data')
     perturbed = {}
     for prob_perturb in tqdm(np.arange(0, 1.0, 0.1)):
-        perturbed[prob_perturb] = perturb_df(original.copy(), prob_perturb=prob_perturb)
+        perturbed[prob_perturb] = perturb_df(original.copy(), prob_perturb, original)
     
     logging.info('Retrieving Reward Model')
     rank_model, tokenizer = get_reward_model()
@@ -86,7 +98,7 @@ def main(args):
         scores[prob_perturb] = get_scores_df(df_, tokenizer=tokenizer, rank_model=rank_model)
     perturbed_scores['response'] = scores
     
-    logging.info('Getting scores from response perturbations)
+    logging.info('Getting scores from response perturbations')
     scores = {}
     for prob_perturb, df_ in perturbed.items():
         df_ = df_.copy()
@@ -101,8 +113,7 @@ def main(args):
     for perturb_partition in perturbed_scores:
         make_dir(args.path + '/' + perturb_partition)
         for perturb_percent in perturbed_scores[perturb_partition]:
-            percent = str(perturb_percent).replace('.','')
-            make_dir(f'{args.path}/{perturb_partition}/{percent}')
+            percent = str(round(perturb_percent,1)).replace('.','')
             pd.DataFrame(perturbed_scores[perturb_partition][perturb_percent]).to_csv(f'{args.path}/{perturb_partition}/{percent}_scores.csv', index=False)
 
 if __name__ == "__main__":
