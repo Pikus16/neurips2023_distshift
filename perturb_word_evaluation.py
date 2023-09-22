@@ -15,8 +15,6 @@ import logging
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
-np.random.seed(0)
-random.seed(0)
 
 word_site = "https://www-personal.umich.edu/~jlawler/wordlist"
 
@@ -71,8 +69,10 @@ def perturb_df(df, prob_perturb, original):
 
 def main(args):
     make_dir(args.path)
+    np.random.seed(args.seed)
+    random.seed(args.seed)
     
-    original = pd.read_csv('data/openai_summarize_from_feedback/english_original.csv').sample(1000).reset_index(drop=True)
+    original = pd.read_csv('data/openai_summarize_from_feedback/english_original.csv').sample(10000).reset_index(drop=True)
     original = original.fillna('')
     
     logging.info('Perturbing Data')
@@ -119,6 +119,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, help='name of the folder path to put results. e.g. trial 2')
+    parser.add_argument('--seed', type=int, help='random seed', default=0)
     args = parser.parse_args()
     main(args)
 
