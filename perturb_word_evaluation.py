@@ -6,7 +6,7 @@ import random
 import os
 import pickle
 import argparse
-from utils import get_reward_model, get_score, get_scores_df, get_percent_chosen
+from utils import RewardModelWrapper, get_percent_chosen
 from nltk.corpus import wordnet as wn
 import matplotlib.pyplot as plt
 from urllib.request import urlopen
@@ -73,6 +73,7 @@ def main(args):
     random.seed(args.seed)
     
     original = pd.read_csv('data/openai_summarize_from_feedback/english_original.csv').sample(10000).reset_index(drop=True)
+    #original = pd.read_csv('data/shp/english_original.csv')
     original = original.fillna('')
     
     logging.info('Perturbing Data')
@@ -81,13 +82,14 @@ def main(args):
         perturbed[prob_perturb] = perturb_df(original.copy(), prob_perturb, original)
     
     logging.info('Retrieving Reward Model')
-    rank_model, tokenizer = get_reward_model()
+    #rank_model, tokenizer = get_reward_model()
+    reward_model = RewardModelWrapper('stanfordnlp/SteamSHP-flan-t5-xl')
     
     logging.info('Getting scores from prompt_and_response perturbations')
     perturbed_scores = {}
     scores = {}
     for prob_perturb, df_ in perturbed.items():
-        scores[prob_perturb] = get_scores_df(df_, tokenizer=tokenizer, rank_model=rank_model)
+        scores[prob_perturb] = reward_model.get_scores_df(df_)
     perturbed_scores['prompt_and_response'] = scores
     
     logging.info('Getting scores from prompt perturbations')
@@ -95,7 +97,7 @@ def main(args):
     for prob_perturb, df_ in perturbed.items():
         df_ = df_.copy()
         df_['prompt'] = original['prompt']
-        scores[prob_perturb] = get_scores_df(df_, tokenizer=tokenizer, rank_model=rank_model)
+        scores[prob_perturb] = reward_model.get_scores_df(df_)
     perturbed_scores['response'] = scores
     
     logging.info('Getting scores from response perturbations')
@@ -104,7 +106,7 @@ def main(args):
         df_ = df_.copy()
         df_['chosen'] = original['chosen']
         df_['rejected'] = original['rejected']
-        scores[prob_perturb] = get_scores_df(df_, tokenizer=tokenizer, rank_model=rank_model)
+        scores[prob_perturb] = reward_model.get_scores_df(df_)
     perturbed_scores['prompt'] = scores
                 
     
