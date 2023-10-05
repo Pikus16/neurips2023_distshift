@@ -42,15 +42,15 @@ class RewardModelWrapper:
             raise ValueError(f'Unknown reward model {reward_name}')
         return rank_model, tokenizer
 
-    def get_score(self, prompt, response):
+    def get_score(self, prompt, response, truncation=True):
         if self.reward_name == "OpenAssistant/reward-model-deberta-v3-large-v2":
             inputs = self.tokenizer(prompt, response, return_tensors='pt', truncation=True)
             inputs = inputs.to(self.device)
             return self.rank_model(**inputs).logits[0].cpu().detach().item()
         elif self.reward_name == 'stanfordnlp/SteamSHP-flan-t5-xl':
             input_text, expected = self.format_shp_prompt(prompt, response)
-            x = self.tokenizer([input_text], return_tensors='pt').input_ids.to(self.device)
-            outputs = self.ramk_model.generate(x, return_dict_in_generate=True, output_scores=True, max_new_tokens=1)
+            x = self.tokenizer([input_text], return_tensors='pt', truncation=truncation).input_ids.to(self.device)
+            outputs = self.rank_model.generate(x, return_dict_in_generate=True, output_scores=True, max_new_tokens=1)
             return outputs.scores[0][:, expected].item()
         else:
             raise ValueError(f'Unknown reward model {self.reward_name}')
