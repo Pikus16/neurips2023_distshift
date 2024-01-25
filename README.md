@@ -1,6 +1,6 @@
 # neurips2023_distshift
 
-The goal of this work is to study reward model performance under distribution shift. This code is for the paper "A Baseline Analysis of Reward Models’ Ability To Accurately Analyze Foundation Models Under Distribution Shift" (soon to be submitted to arxiv).
+The goal of this work is to study reward model performance under distribution shift. This code is for the paper ["A Baseline Analysis of Reward Models’ Ability To Accurately Analyze Foundation Models Under Distribution Shift"](https://arxiv.org/abs/2311.14743).
 
 ## Word Perturbations
 We artificially induce distribution shift by perturbing words with some probability (where the perturbation is either an insertion, deletion, or replacement with a random word). A higher probability means a larger distribution shift. This induces distribution shift because these perturbations cause the prompts and responses to be more non-sensical - and therefore more dissimilar to the prompts and responses in the training set.
